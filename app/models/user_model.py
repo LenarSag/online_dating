@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from enum import Enum as PyEnum
 import re
+import uuid
 
 from sqlalchemy import (
     Column,
@@ -15,6 +16,7 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from app.models.base import Base
 
@@ -35,18 +37,21 @@ class UserSex(PyEnum):
 class User(Base):
     __tablename__ = 'user'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[PG_UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
     email: Mapped[str] = mapped_column(
         String(150), unique=True, nullable=False, index=True
     )
-    name: Mapped[str] = mapped_column(String(50))
-    last_name: Mapped[str] = mapped_column(String(50))
+    password: Mapped[str] = mapped_column(nullable=False)
+    first_name: Mapped[str] = mapped_column(String(50), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(50), nullable=False)
     sex: Mapped[UserSex] = mapped_column(
         Enum(UserSex, values_callable=lambda obj: [e.value for e in obj]),
         nullable=False,
     )
     birth_date: Mapped[date] = mapped_column(Date, nullable=False)
-    is_active: Mapped[bool] = mapped_column(default=True)
+    is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
     last_online: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
     location: Mapped['Location'] = relationship(
@@ -62,6 +67,20 @@ class User(Base):
         if not re.match(email_regex, email):
             raise ValueError('Invalid email format')
         return email
+
+    @validates('first_name')
+    def validate_first_name(self, key, first_name):
+        username_regex = r'^[\w.@+-]+$'
+        if not re.match(username_regex, first_name):
+            raise ValueError('First name is invalid')
+        return first_name
+
+    @validates('last_name')
+    def validate_last_name(self, key, last_name):
+        username_regex = r'^[\w.@+-]+$'
+        if not re.match(username_regex, last_name):
+            raise ValueError('Last name is invalid')
+        return last_name
 
     @validates('birth_date')
     def validate_birth_date(self, key, birth_date):
@@ -92,7 +111,7 @@ class Location(Base):
 
     user: Mapped['User'] = relationship(back_populates='location')
 
-    __table_args__ = (UniqueConstraint('user_id'),)
+    __table_args__ = (UniqueConstraint('user_id', name='location_user_id'),)
 
     @validates('latitude')
     def validate_latitude(self, key, latitude):
