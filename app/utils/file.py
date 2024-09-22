@@ -20,6 +20,7 @@ def check_file(file: UploadFile):
             detail='File is too big',
             status_code=status.HTTP_400_BAD_REQUEST,
         )
+    return file
 
 
 def get_file_path(filename: str, unique_name: UUID) -> str:

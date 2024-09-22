@@ -67,6 +67,7 @@ class UserBase(UserCreate):
     name: str
     last_name: str
     sex: UserSex
+    photo: str
     birth_date: datetime
 
     class Config:

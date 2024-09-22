@@ -3,7 +3,7 @@ import os
 from fastapi import FastAPI
 import uvicorn
 
-from app.routes.login import loginrouter
+from app.endpoints.login import loginrouter
 from config import UPLOAD_DIR
 
 

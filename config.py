@@ -7,5 +7,6 @@ API_URL = '/api/v1'
 UPLOAD_DIR = 'app/media/photos'
 
 MAX_FILE_SIZE = 1024 * 1024 * 5
+FILE_CHUNK_SIZE = 1024 * 1024
 
 WATERMARK = 'https://github.com/LenarSag'

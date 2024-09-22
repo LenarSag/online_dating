@@ -1,22 +1,24 @@
-def thirdMax(nums: list[int]) -> int:
-    if len(nums) < 3:
-        return max(nums)
+def findWords(words: list[str]) -> list[str]:
+    upper = set('qwertyuiop')
+    middle = set('asdfghjkl')
+    bottom = set('zxcvbnm')
 
-    mx_1 = -float('inf') + 2
-    mx_2 = -float('inf') + 1
-    mx_3 = -float('inf')
+    lst = []
 
-    for num in nums:
-        if num > mx_1:
-            mx_1, mx_2, mx_3 = num, mx_1, mx_2
-        elif num > mx_2:
-            mx_2, mx_3 = num, mx_2
-        elif num > mx_3:
-            mx_3 = num
+    for word in words:
+        s = set(word.lower())
+        if s.issubset(upper):
+            lst.append(word)
+            break
+        elif s.issubset(middle):
+            lst.append(word)
+            break
+        elif s.issubset(bottom):
+            lst.append(word)
+            break
 
-    return mx_3
+    return lst
 
 
-nums = [2, 2, 3, 1]
-
-thirdMax(nums)
+words = ['Hello', 'Alaska', 'Dad', 'Peace']
+print(findWords(words))

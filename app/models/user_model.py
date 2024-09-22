@@ -51,6 +51,7 @@ class User(Base):
         nullable=False,
     )
     birth_date: Mapped[date] = mapped_column(Date, nullable=False)
+    photo: Mapped[str] = mapped_column(String(100), nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
     last_online: Mapped[datetime] = mapped_column(DateTime, default=func.now())
 
