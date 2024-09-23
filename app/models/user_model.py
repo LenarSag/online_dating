@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from email.policy import default
 from enum import Enum as PyEnum
 import re
 
@@ -107,8 +108,8 @@ class Location(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'))
-    latitude: Mapped[float] = mapped_column(Float, nullable=False)
-    longitude: Mapped[float] = mapped_column(Float, nullable=False)
+    latitude: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    longitude: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
 
     user: Mapped['User'] = relationship(back_populates='location')
 

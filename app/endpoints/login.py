@@ -1,11 +1,12 @@
-import json
 import uuid
+
 import aiofiles
-from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.user_repository import create_user, get_user_by_email
 from app.db.database import get_session
+from app.schemas.token import Token
 from app.schemas.user_schema import UserAuthentication, UserBase, UserCreate
 from app.security.authentication import authenticate_user, create_access_token
 from app.security.pwd_crypt import get_hashed_password
@@ -18,7 +19,7 @@ loginrouter = APIRouter()
 
 
 @loginrouter.post(
-    '/users', response_model=UserBase, status_code=status.HTTP_201_CREATED
+    '/clients/create', response_model=UserBase, status_code=status.HTTP_201_CREATED
 )
 async def post_endpoint(
     user_data: UserCreate = Depends(),
@@ -31,8 +32,9 @@ async def post_endpoint(
             detail='Email already taken', status_code=status.HTTP_400_BAD_REQUEST
         )
 
+    # create unique user id and user's photo name
     user_id = uuid.uuid4()
-
+    # check if file is valid image
     in_file = check_file(in_file)
     file_path = get_file_path(in_file.filename, user_id)
 
@@ -59,14 +61,14 @@ async def post_endpoint(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
     finally:
-        await file.close()
+        await in_file.close()
 
     user_data.password = get_hashed_password(user_data.password)
     new_user = await create_user(session, user_data, user_id, file_path)
     return new_user
 
 
-@loginrouter.post('/token/login', response_model=dict[str, str])
+@loginrouter.post('/token/login', response_model=Token)
 async def get_token(
     user_data: UserAuthentication, session: AsyncSession = Depends(get_session)
 ):
@@ -74,8 +76,8 @@ async def get_token(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Invalid credentials',
+            detail='Incorrect email or password',
             headers={'WWW-Authenticate': 'Bearer'},
         )
     access_token = create_access_token(user)
-    return {'access_token': access_token, 'token_type': 'Bearer'}
+    return Token(access_token=access_token, token_type='Bearer')

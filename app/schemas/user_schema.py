@@ -1,5 +1,6 @@
 from datetime import date, datetime
 import re
+from typing import Optional
 from uuid import UUID
 
 from fastapi.exceptions import ValidationException
@@ -75,5 +76,31 @@ class UserBase(BaseModel):
         use_enum_values = True
 
 
+class UserWithCoordinates(UserBase):
+    location: 'LocationBase'
+
+
+class UserForUser(BaseModel):
+    first_name: str
+    last_name: str
+    sex: UserSex
+    photo: str
+    age: int
+    distance_to: float
+    tags: Optional[list['Tag']]
+
+    class Config:
+        from_attributes = True
+        use_enum_values = True
+
+
 class Tag(BaseModel):
     name: str
+
+
+class LocationBase(BaseModel):
+    latitude: float
+    longitude: float
+
+    class Config:
+        from_attributes = True
