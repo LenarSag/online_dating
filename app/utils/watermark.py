@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 from config import WATERMARK
 
 
-def add_watermark_to_photo(file, file_name=None):
+def add_watermark_to_photo(file):
     # Convert bytes to an image
     original_image = Image.open(io.BytesIO(file))
     draw = ImageDraw.Draw(original_image)
@@ -16,11 +16,11 @@ def add_watermark_to_photo(file, file_name=None):
     font_size = int(image_width * 0.05)
     font = ImageFont.truetype('arial.ttf', font_size)
     text_color = (255, 255, 255)
+    margin = 10
+
     text_bbox = draw.textbbox((0, 0), watermark_text, font=font)
     text_width = text_bbox[2] - text_bbox[0]
     text_height = text_bbox[3] - text_bbox[1]
-
-    margin = 10
     position = (image_width - text_width - margin, image_height - text_height - margin)
     draw.text(position, watermark_text, font=font, fill=text_color)
 

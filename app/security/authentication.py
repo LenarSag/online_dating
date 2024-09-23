@@ -9,7 +9,7 @@ from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user_model import User
-from app.crud.user_repository import get_user_by_id, get_user_by_email
+from app.crud.user_repository import get_user_by_email, get_user_by_id
 from app.db.database import get_session
 from app.security.pwd_crypt import verify_password
 from config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, API_URL, SECRET_KEY

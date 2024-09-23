@@ -16,10 +16,10 @@ class UserAuthentication(BaseModel):
 class UserCreate(BaseModel):
     email: EmailStr = Field(max_length=150)
     password: str
-    name: str = Field(max_length=50, pattern=r'^[\w.@+-]+$')
+    first_name: str = Field(max_length=50, pattern=r'^[\w.@+-]+$')
     last_name: str = Field(max_length=50, pattern=r'^[\w.@+-]+$')
     sex: UserSex
-    birth_date: datetime
+    birth_date: date
 
     @field_validator('password')
     @classmethod
@@ -61,10 +61,10 @@ class UserCreate(BaseModel):
         use_enum_values = True
 
 
-class UserBase(UserCreate):
+class UserBase(BaseModel):
     id: UUID
     email: EmailStr
-    name: str
+    first_name: str
     last_name: str
     sex: UserSex
     photo: str

@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.models.base import Base
+from app import models
 
 
 async_engine = create_async_engine('sqlite+aiosqlite:///db.sqlite3', echo=True)
@@ -13,9 +13,9 @@ async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit
 
 async def init_models():
     async with async_engine.begin() as conn:
-        existing_tables = await conn.run_sync(Base.metadata.reflect)
+        existing_tables = await conn.run_sync(models.Base.metadata.reflect)
         if not existing_tables:
-            await conn.run_sync(Base.metadata.create_all)
+            await conn.run_sync(models.Base.metadata.create_all)
 
 
 async def get_session() -> AsyncSession:

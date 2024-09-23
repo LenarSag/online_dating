@@ -1,7 +1,6 @@
 from datetime import date, datetime
 from enum import Enum as PyEnum
 import re
-import uuid
 
 from sqlalchemy import (
     Column,
@@ -38,7 +37,8 @@ class User(Base):
     __tablename__ = 'user'
 
     id: Mapped[PG_UUID] = mapped_column(
-        PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        PG_UUID(as_uuid=True),
+        primary_key=True,
     )
     email: Mapped[str] = mapped_column(
         String(150), unique=True, nullable=False, index=True
