@@ -4,11 +4,12 @@ import uuid
 from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from pydantic import EmailStr
+from sqlalchemy import and_, exists
 from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.user_model import Location, User
+from app.models.user_model import Location, Match, User
 from app.schemas.fastapi_models import UserFilter
 from app.schemas.user_schema import LocationBase, UserCreate
 
@@ -73,3 +74,29 @@ async def get_paginated_users(
         query,
         params,
     )
+
+
+async def match_exists(
+    session: AsyncSession, current_user: User, matched_user_id: uuid.UUID
+):
+    query = select(
+        exists().where(
+            and_(
+                Match.user_id == current_user.id,
+                Match.matched_user_id == matched_user_id,
+            )
+        )
+    )
+    result = await session.execute(query)
+    return result.scalar()
+
+
+async def create_match(
+    session: AsyncSession, current_user: User, matching_user_id: uuid.UUID
+):
+    match = Match(user_id=current_user.id, matched_user_id=matching_user_id)
+
+    session.add(match)
+    await session.flush()
+    await session.commit()
+    return match

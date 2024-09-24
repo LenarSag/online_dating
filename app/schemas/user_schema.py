@@ -81,6 +81,7 @@ class UserWithCoordinates(UserBase):
 
 
 class UserOut(BaseModel):
+    id: UUID
     first_name: str
     last_name: str
     sex: UserSex

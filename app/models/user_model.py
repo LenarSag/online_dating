@@ -62,12 +62,11 @@ class User(Base):
     tags: Mapped[list['Tag']] = relationship(
         'Tag', secondary=user_tag, back_populates='users'
     )
-
     initiated_matches = relationship(
-        'Match', foreign_keys='match.user_id', back_populates='user'
+        'Match', foreign_keys='Match.user_id', back_populates='user'
     )
     received_matches = relationship(
-        'Match', foreign_keys='match.matched_user_id', back_populates='matched_user'
+        'Match', foreign_keys='Match.matched_user_id', back_populates='matched_user'
     )
 
     @validates('email')
@@ -158,7 +157,7 @@ class Match(Base):
         ForeignKey('user.id', ondelete='CASCADE')
     )
     is_mutual: Mapped[bool] = mapped_column(default=False)
-    matched_at: Mapped[Date] = mapped_column(Date, default=func.now())
+    matched_at: Mapped[Date] = mapped_column(Date, default=func.current_date())
 
     user = relationship(
         'User', foreign_keys=[user_id], back_populates='initiated_matches'
