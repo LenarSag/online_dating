@@ -1,7 +1,7 @@
 from typing import Optional
 import uuid
 
-from fastapi_pagination import Page, Params
+from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from pydantic import EmailStr
 from sqlalchemy.orm import selectinload
@@ -73,12 +73,3 @@ async def get_paginated_users(
         query,
         params,
     )
-
-    # return await paginate(
-    #     session,
-    #     select(User)
-    #     .options(selectinload(User.tags))
-    #     .options(selectinload(User.location))
-    #     .order_by(User.first_name),
-    #     params,
-    # )
