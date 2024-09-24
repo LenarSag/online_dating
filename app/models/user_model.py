@@ -63,6 +63,13 @@ class User(Base):
         'Tag', secondary=user_tag, back_populates='users'
     )
 
+    initiated_matches = relationship(
+        'Match', foreign_keys='match.user_id', back_populates='user'
+    )
+    received_matches = relationship(
+        'Match', foreign_keys='match.matched_user_id', back_populates='matched_user'
+    )
+
     @validates('email')
     def validate_email(self, key, email):
         email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
@@ -140,3 +147,22 @@ class Tag(Base):
     )
 
     __table_args__ = (UniqueConstraint('name', 'slug', name='tag_name_slug'),)
+
+
+class Match(Base):
+    __tablename__ = 'match'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'))
+    matched_user_id: Mapped[int] = mapped_column(
+        ForeignKey('user.id', ondelete='CASCADE')
+    )
+    is_mutual: Mapped[bool] = mapped_column(default=False)
+    matched_at: Mapped[Date] = mapped_column(Date, default=func.now())
+
+    user = relationship(
+        'User', foreign_keys=[user_id], back_populates='initiated_matches'
+    )
+    matched_user = relationship(
+        'User', foreign_keys=[matched_user_id], back_populates='received_matches'
+    )
