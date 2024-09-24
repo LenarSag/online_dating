@@ -1,3 +1,5 @@
+from collections.abc import AsyncIterator
+
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -18,6 +20,6 @@ async def init_models():
             await conn.run_sync(models.Base.metadata.create_all)
 
 
-async def get_session() -> AsyncSession:
+async def get_session() -> AsyncIterator[AsyncSession]:
     async with async_session() as session:
         yield session

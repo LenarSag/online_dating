@@ -9,6 +9,7 @@ from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user_model import Location, User
+from app.schemas.fastapi_models import UserFilter
 from app.schemas.user_schema import LocationBase, UserCreate
 
 
@@ -57,14 +58,27 @@ async def update_user_coordinates(
 
 
 async def get_paginated_users(
-    session: AsyncSession, params: Params, current_user: User
+    session: AsyncSession, user_filter: UserFilter, params: Params, current_user: User
 ):
-    return await paginate(
-        session,
+    query = (
         select(User)
         .options(selectinload(User.tags))
         .options(selectinload(User.location))
         .filter(User.id != current_user.id)
-        .order_by(User.first_name),
+    )
+    query = user_filter.filter(query)
+    query = user_filter.sort(query)
+    return await paginate(
+        session,
+        query,
         params,
     )
+
+    # return await paginate(
+    #     session,
+    #     select(User)
+    #     .options(selectinload(User.tags))
+    #     .options(selectinload(User.location))
+    #     .order_by(User.first_name),
+    #     params,
+    # )

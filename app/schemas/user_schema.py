@@ -80,7 +80,7 @@ class UserWithCoordinates(UserBase):
     location: 'LocationBase'
 
 
-class UserForUser(BaseModel):
+class UserOut(BaseModel):
     first_name: str
     last_name: str
     sex: UserSex

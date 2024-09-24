@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.user_repository import create_user, get_user_by_email
 from app.db.database import get_session
-from app.schemas.token import Token
+from app.schemas.fastapi_models import Token
 from app.schemas.user_schema import UserAuthentication, UserBase, UserCreate
 from app.security.authentication import authenticate_user, create_access_token
 from app.security.pwd_crypt import get_hashed_password

@@ -3,31 +3,33 @@ import math
 from app.schemas.user_schema import LocationBase
 
 
-def get_distance_between_coordinates(coord1: LocationBase, coord2: LocationBase):
+def get_distance_between_coordinates(
+    coordinates1: LocationBase, coordinates2: LocationBase
+):
     # Earth radius in kilometers
     R = 6371.0
 
     # Coordinates (latitude, longitude)
-    lat1 = coord1.latitude
-    lon1 = coord1.longitude
+    latitude1 = coordinates1.latitude
+    longitude1 = coordinates1.longitude
 
-    lat2 = coord2.latitude
-    lon2 = coord2.longitude
+    latitude2 = coordinates2.latitude
+    longitude2 = coordinates2.longitude
 
     # Convert latitude and longitude from degrees to radians
-    lat1 = math.radians(lat1)
-    lon1 = math.radians(lon1)
-    lat2 = math.radians(lat2)
-    lon2 = math.radians(lon2)
+    latitude1 = math.radians(latitude1)
+    longitude1 = math.radians(longitude1)
+    latitude2 = math.radians(latitude2)
+    longitude2 = math.radians(longitude2)
 
     # Differences in coordinates
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
+    dlat = latitude2 - latitude1
+    dlon = longitude2 - longitude1
 
     # Haversine formula
     a = (
         math.sin(dlat / 2) ** 2
-        + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+        + math.cos(latitude1) * math.cos(latitude2) * math.sin(dlon / 2) ** 2
     )
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
