@@ -19,6 +19,7 @@ class UserFilter(Filter):
     sex: Optional[UserSex] = None
     birth_date__lt: Optional[date] = None
     birth_date__gt: Optional[date] = None
+    distance_to__lt: Optional[float] = None
     order_by: list[str] = ['first_name']
 
     class Constants(Filter.Constants):

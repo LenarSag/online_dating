@@ -7,9 +7,6 @@ from app import models
 
 
 async_engine = create_async_engine('sqlite+aiosqlite:///db.sqlite3', echo=True)
-# async_engine = create_async_engine(
-#     'postgresql+asyncpg://postgres:postgres@localhost:5432/postgres', echo=True
-# )
 async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
 

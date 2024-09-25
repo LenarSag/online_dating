@@ -4,7 +4,7 @@ import uuid
 from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from pydantic import EmailStr
-from sqlalchemy import and_, exists
+from sqlalchemy import and_, exists, func
 from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -61,24 +61,35 @@ async def update_user_coordinates(
 async def get_paginated_users(
     session: AsyncSession, user_filter: UserFilter, params: Params, current_user: User
 ):
+    # Subquery to get users liked by the current user
+    liked_users_subquery = (
+        select(Match.matched_user_id)
+        .filter(Match.user_id == current_user.id)
+        .subquery()
+    )
+
+    # Main query to fetch users with distance calculation
     query = (
         select(User)
         .options(selectinload(User.tags))
         .options(selectinload(User.location))
         .filter(User.id != current_user.id)
+        .filter(
+            User.id.not_in(select(liked_users_subquery))
+        )  # Exclude users liked by the current user
     )
+
+    # Apply filtering and sorting
     query = user_filter.filter(query)
     query = user_filter.sort(query)
-    return await paginate(
-        session,
-        query,
-        params,
-    )
+
+    # Paginate and return the result
+    return await paginate(session, query, params)
 
 
 async def match_exists(
     session: AsyncSession, current_user: User, matched_user_id: uuid.UUID
-):
+) -> Optional[bool]:
     query = select(
         exists().where(
             and_(
@@ -91,11 +102,44 @@ async def match_exists(
     return result.scalar()
 
 
+async def create_mutual_match(
+    session: AsyncSession, user_match: Match, target_user_match: Match
+) -> None:
+    user_match.is_mutual = True
+    target_user_match.is_mutual = True
+    await session.commit()
+
+
+async def get_match(
+    session: AsyncSession, current_user: User, matched_user_id: uuid.UUID
+) -> Optional[Match]:
+    query = select(Match).where(
+        and_(
+            Match.user_id == current_user.id,
+            Match.matched_user_id == matched_user_id,
+        )
+    )
+    result = await session.execute(query)
+    return result.scalar()
+
+
+async def get_reversed_match(
+    session: AsyncSession, current_user: User, matched_user_id: uuid.UUID
+) -> Optional[Match]:
+    query = select(Match).where(
+        and_(
+            Match.user_id == matched_user_id,
+            Match.matched_user_id == current_user.id,
+        )
+    )
+    result = await session.execute(query)
+    return result.scalar()
+
+
 async def create_match(
     session: AsyncSession, current_user: User, matching_user_id: uuid.UUID
-):
+) -> Match:
     match = Match(user_id=current_user.id, matched_user_id=matching_user_id)
-
     session.add(match)
     await session.flush()
     await session.commit()

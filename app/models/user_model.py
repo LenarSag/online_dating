@@ -152,8 +152,8 @@ class Match(Base):
     __tablename__ = 'match'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'))
-    matched_user_id: Mapped[int] = mapped_column(
+    user_id: Mapped[PG_UUID] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'))
+    matched_user_id: Mapped[PG_UUID] = mapped_column(
         ForeignKey('user.id', ondelete='CASCADE')
     )
     is_mutual: Mapped[bool] = mapped_column(default=False)

@@ -1,5 +1,4 @@
 from pathlib import Path
-import os
 from uuid import UUID
 
 from fastapi import HTTPException, status, UploadFile
@@ -7,7 +6,7 @@ from fastapi import HTTPException, status, UploadFile
 from config import UPLOAD_DIR, MAX_FILE_SIZE
 
 
-def check_file(file: UploadFile):
+def check_file(file: UploadFile) -> UploadFile:
     if file.content_type not in (
         'image/jpeg',
         'image/png',

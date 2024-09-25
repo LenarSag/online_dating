@@ -1,9 +1,8 @@
-from datetime import datetime, date
+from datetime import date
 
 
 def calculate_age(birthdate: date) -> int:
-    today = date.today()  # Get the current date (without time)
-
+    today = date.today()
     # Calculate age based on year difference
     age = today.year - birthdate.year
 
