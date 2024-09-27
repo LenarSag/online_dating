@@ -13,7 +13,6 @@ from app.crud.user_repository import (
     get_paginated_users,
     get_reversed_match,
     get_user_by_id,
-    get_user_coordinates,
     update_user_coordinates,
 )
 from app.db.database import get_session
@@ -22,7 +21,6 @@ from app.schemas.fastapi_models import UserFilter
 from app.schemas.user_schema import LocationBase, UserOut, UserWithCoordinates
 from app.security.authentication import get_current_user
 from app.utils.age import calculate_age
-from app.utils.coordinates import get_distance_between_coordinates
 from app.utils.send_email import send_notification_about_match
 
 
