@@ -90,11 +90,29 @@ async def get_paginated_users(
     query = (
         select(User)
         .join(User.location)
-        .options(selectinload(User.tags))
-        .options(with_expression(User.distance_to, exp_distance_to))
-        .filter(User.id != current_user.id)
-        .filter(User.id.not_in(select(liked_users_subquery)))
+        .options(
+            selectinload(User.tags), with_expression(User.distance_to, exp_distance_to)
+        )
+        .filter(
+            User.id != current_user.id, User.id.not_in(select(liked_users_subquery))
+        )
     )
+
+    # Override user_filter because can't directly filter distance_to field, because its dynamical
+    # If the 'distance_to' filter is set, apply it manually using the exp_distance_to expression
+    # And clear the filter after using to prevent it from being applied again
+
+    if user_filter.distance_to__lt is not None:
+        query = query.filter(
+            exp_distance_to < user_filter.distance_to__lt
+        )  # Filter users whose distance is less than 'distance_to_lt'
+        user_filter.distance_to__lt = None
+
+    if user_filter.distance_to__gt is not None:
+        query = query.filter(
+            exp_distance_to > user_filter.distance_to__gt
+        )  # Filter users whose distance is greater than 'distance_to_gt'
+        user_filter.distance_to__gt = None
 
     # Apply filtering and sorting
     query = user_filter.filter(query)
