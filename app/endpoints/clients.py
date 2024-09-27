@@ -48,9 +48,6 @@ async def get_clients_list(
 ):
     result = await get_paginated_users(session, user_filter, params, current_user)
 
-    print('kik', result.items)
-    # print('oko', result.items[0][0])
-
     result.items = [
         UserOut(
             id=item.id,

@@ -97,7 +97,6 @@ async def get_paginated_users(
         .filter(User.id.not_in(select(liked_users_subquery)))
     )
 
-    print('leo', user_filter.distance_to__lt)
     # Apply filtering and sorting
     query = user_filter.filter(query)
     query = user_filter.sort(query)
