@@ -73,26 +73,19 @@ async def get_paginated_users(
         .subquery()
     )
 
+    exp_distance_to = 6371.0 * func.acos(
+        func.cos(func.radians(current_latitude))
+        * func.cos(func.radians(Location.latitude))
+        * func.cos(func.radians(Location.longitude) - func.radians(current_longitude))
+        + func.sin(func.radians(current_latitude))
+        * func.sin(func.radians(Location.latitude))
+    )
+
     query = (
         select(User)
         .join(User.location)
         .options(selectinload(User.tags))
-        .options(
-            with_expression(
-                User.distance_to,
-                6371.0
-                * func.acos(
-                    func.cos(func.radians(current_latitude))
-                    * func.cos(func.radians(Location.latitude))
-                    * func.cos(
-                        func.radians(Location.longitude)
-                        - func.radians(current_longitude)
-                    )
-                    + func.sin(func.radians(current_latitude))
-                    * func.sin(func.radians(Location.latitude))
-                ),
-            )
-        )
+        .options(with_expression(User.distance_to, exp_distance_to))
         .filter(User.id != current_user.id)
         .filter(User.id.not_in(select(liked_users_subquery)))
     )

@@ -56,9 +56,7 @@ async def get_clients_list(
             sex=item.sex,
             photo=item.photo,
             age=calculate_age(item.birth_date),
-            distance_to=item.distance_to,  # get_distance_between_coordinates(
-            #     item.location, current_user_coordinates
-            # ),
+            distance_to=item.distance_to,
             tags=item.tags,
         )
         for item in result.items
