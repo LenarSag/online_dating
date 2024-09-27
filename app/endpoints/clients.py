@@ -46,8 +46,10 @@ async def get_clients_list(
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
-    current_user_coordinates = await get_user_coordinates(session, current_user)
     result = await get_paginated_users(session, user_filter, params, current_user)
+
+    print('kik', result.items)
+    # print('oko', result.items[0][0])
 
     result.items = [
         UserOut(
@@ -57,9 +59,9 @@ async def get_clients_list(
             sex=item.sex,
             photo=item.photo,
             age=calculate_age(item.birth_date),
-            distance_to=get_distance_between_coordinates(
-                item.location, current_user_coordinates
-            ),
+            distance_to=item.distance_to,  # get_distance_between_coordinates(
+            #     item.location, current_user_coordinates
+            # ),
             tags=item.tags,
         )
         for item in result.items

@@ -10,3 +10,5 @@ MAX_FILE_SIZE = 1024 * 1024 * 5
 FILE_CHUNK_SIZE = 1024 * 1024
 
 WATERMARK = 'https://github.com/LenarSag'
+
+EARTH_RADIUS = 6371.0

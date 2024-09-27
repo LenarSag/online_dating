@@ -15,8 +15,15 @@ from sqlalchemy import (
     Table,
     UniqueConstraint,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+    validates,
+    query_expression,
+)
+
 
 from app.models.base import Base
 
@@ -55,9 +62,10 @@ class User(Base):
     photo: Mapped[str] = mapped_column(String(100), nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
     last_online: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    distance_to: Mapped[float] = query_expression()
 
     location: Mapped['Location'] = relationship(
-        back_populates='user', cascade='all, delete-orphan'
+        back_populates='user', lazy='selectin', cascade='all, delete-orphan'
     )
     tags: Mapped[list['Tag']] = relationship(
         'Tag', secondary=user_tag, back_populates='users'

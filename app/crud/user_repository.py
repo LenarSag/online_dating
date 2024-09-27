@@ -5,9 +5,9 @@ from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from pydantic import EmailStr
 from sqlalchemy import and_, exists, func
-from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload, with_expression
 
 from app.models.user_model import Location, Match, User
 from app.schemas.fastapi_models import UserFilter
@@ -61,6 +61,11 @@ async def update_user_coordinates(
 async def get_paginated_users(
     session: AsyncSession, user_filter: UserFilter, params: Params, current_user: User
 ):
+    await session.refresh(current_user, attribute_names=('location',))
+
+    current_latitude = current_user.location.latitude
+    current_longitude = current_user.location.longitude
+
     # Subquery to get users liked by the current user
     liked_users_subquery = (
         select(Match.matched_user_id)
@@ -68,17 +73,31 @@ async def get_paginated_users(
         .subquery()
     )
 
-    # Main query to fetch users with distance calculation
     query = (
         select(User)
+        .join(User.location)
         .options(selectinload(User.tags))
-        .options(selectinload(User.location))
+        .options(
+            with_expression(
+                User.distance_to,
+                6371.0
+                * func.acos(
+                    func.cos(func.radians(current_latitude))
+                    * func.cos(func.radians(Location.latitude))
+                    * func.cos(
+                        func.radians(Location.longitude)
+                        - func.radians(current_longitude)
+                    )
+                    + func.sin(func.radians(current_latitude))
+                    * func.sin(func.radians(Location.latitude))
+                ),
+            )
+        )
         .filter(User.id != current_user.id)
-        .filter(
-            User.id.not_in(select(liked_users_subquery))
-        )  # Exclude users liked by the current user
+        .filter(User.id.not_in(select(liked_users_subquery)))
     )
 
+    print('leo', user_filter.distance_to__lt)
     # Apply filtering and sorting
     query = user_filter.filter(query)
     query = user_filter.sort(query)
