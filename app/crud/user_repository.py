@@ -9,6 +9,7 @@ from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, with_expression
 
+from config import EARTH_RADIUS
 from app.models.user_model import Location, Match, User
 from app.schemas.fastapi_models import UserFilter
 from app.schemas.user_schema import LocationBase, UserCreate
@@ -73,12 +74,17 @@ async def get_paginated_users(
         .subquery()
     )
 
-    exp_distance_to = 6371.0 * func.acos(
-        func.cos(func.radians(current_latitude))
-        * func.cos(func.radians(Location.latitude))
-        * func.cos(func.radians(Location.longitude) - func.radians(current_longitude))
-        + func.sin(func.radians(current_latitude))
-        * func.sin(func.radians(Location.latitude))
+    exp_distance_to = EARTH_RADIUS * func.round(
+        func.acos(
+            func.cos(func.radians(current_latitude))
+            * func.cos(func.radians(Location.latitude))
+            * func.cos(
+                func.radians(Location.longitude) - func.radians(current_longitude)
+            )
+            + func.sin(func.radians(current_latitude))
+            * func.sin(func.radians(Location.latitude))
+        ),
+        2,
     )
 
     query = (
