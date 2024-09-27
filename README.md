@@ -71,8 +71,10 @@ POST /api/clients/{id}/match
 
 Ответ:
 
-```
 201_CREATED:
+
+```
+
 {
     'status': 'mutual_match',
     'message': 'You and the user have both matched each other.',
@@ -84,15 +86,17 @@ GET /clients/list
 
 Параметры фильтрации:
 
+```
 gender: пол участника.
 first_name: имя участника.
 last_name: фамилия участника.
-distance_to: расстояние до участника (в км).
-Ответ:
-
+distance_to: расстояние до участника (в км)
 ```
+
+Ответ:
 200 OK: Список участников, соответствующих критериям.
 
+```
 {
     "items": [
         {
