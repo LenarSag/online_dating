@@ -89,7 +89,7 @@ def test_user_data():
 
 @pytest.fixture
 def test_user_coordinates():
-    return {'latitude': '11.345', 'longitude': '23.456'}
+    return {'latitude': 11.345, 'longitude': 23.456}
 
 
 @pytest.fixture
@@ -254,33 +254,31 @@ async def test_create_same_contact(test_user_data, test_file):
         assert data['detail'] == expected_error_message
 
 
-# @pytest.mark.asyncio
-# async def test_create_contact_with_big_image(
-#     test_user_with_bad_image_data, test_large_file
-# ):
-#     async with AsyncClient(
-#         transport=transport,
-#         base_url='http://test',
-#     ) as client:
-#         files = {
-#             'in_file': (test_large_file.name, test_large_file, 'image/jpeg'),
-#         }
+@pytest.mark.asyncio
+async def test_create_contact_with_big_image(
+    test_user_with_bad_image_data, test_large_file
+):
+    async with AsyncClient(
+        transport=transport,
+        base_url='http://test',
+    ) as client:
+        files = {
+            'in_file': (test_large_file.name, test_large_file, 'image/jpeg'),
+        }
 
-#         response = await client.post(
-#             f'{API_URL}/auth/clients/create',
-#             params=test_user_with_bad_image_data,
-#             files=files,
-#         )
+        response = await client.post(
+            f'{API_URL}/auth/clients/create',
+            params=test_user_with_bad_image_data,
+            files=files,
+        )
 
-#         assert (
-#             response.status_code == status.HTTP_400_BAD_REQUEST
-#         ), f'Error: {response.json()}'
-
-#         # Assert that the error message is as expected
-#         expected_error_message = 'File is too big'
-#         assert (
-#             response.json()['detail'] == expected_error_message
-#         ), f"Expected: '{expected_error_message}', got: '{response.json()['detail']}'"
+        assert (
+            response.status_code == status.HTTP_400_BAD_REQUEST
+        ), f'Error: {response.json()}'
+        expected_error_message = 'File is too big'
+        assert (
+            response.json()['detail'] == expected_error_message
+        ), f"Expected: '{expected_error_message}', got: '{response.json()['detail']}'"
 
 
 @pytest.mark.asyncio
@@ -361,10 +359,8 @@ async def test_update_coordinates(auth_headers, test_user_coordinates):
         assert response.status_code == status.HTTP_200_OK
         response_data = response.json()
         assert (
-            float(test_user_coordinates['latitude'])
-            == response_data['location']['latitude']
+            test_user_coordinates['latitude'] == response_data['location']['latitude']
         ), f"Expected latitude: { test_user_coordinates['latitude']}, but got: {response_data['location']['latitude']}"
         assert (
-            float(test_user_coordinates['longitude'])
-            == response_data['location']['longitude']
+            test_user_coordinates['longitude'] == response_data['location']['longitude']
         ), f"Expected longitude: { test_user_coordinates['longitude']}, but got: {response_data['location']['longitude']}"
