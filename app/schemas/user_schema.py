@@ -68,7 +68,7 @@ class UserBase(BaseModel):
     last_name: str
     sex: UserSex
     photo: str
-    birth_date: datetime
+    birth_date: date
 
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
