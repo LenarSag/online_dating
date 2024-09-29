@@ -52,7 +52,7 @@ async def get_user_coordinates(
 async def update_user_coordinates(
     session: AsyncSession, user: User, location: LocationBase
 ) -> User:
-    await session.refresh(user, attribute_names=('location',))
+    await session.refresh(user, attribute_names=("location",))
     user.location.latitude = location.latitude
     user.location.longitude = location.longitude
     await session.commit()
@@ -62,7 +62,7 @@ async def update_user_coordinates(
 async def get_paginated_users(
     session: AsyncSession, user_filter: UserFilter, params: Params, current_user: User
 ):
-    await session.refresh(current_user, attribute_names=('location',))
+    await session.refresh(current_user, attribute_names=("location",))
 
     current_latitude = current_user.location.latitude
     current_longitude = current_user.location.longitude
