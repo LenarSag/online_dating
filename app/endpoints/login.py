@@ -1,6 +1,5 @@
 import uuid
 
-import aiofiles
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,65 +9,38 @@ from app.schemas.fastapi_models import Token
 from app.schemas.user_schema import UserAuthentication, UserBase, UserCreate
 from app.security.authentication import authenticate_user, create_access_token
 from app.security.pwd_crypt import get_hashed_password
-from app.utils.file import check_file, get_file_path
-from app.utils.watermark import add_watermark_to_photo
-from config import FILE_CHUNK_SIZE
+from app.utils.files_handling import FileSaver, get_file_saver
+from app.utils.unique_id import get_new_user_id
 
 
 loginrouter = APIRouter()
 
 
 @loginrouter.post(
-    '/clients/create', response_model=UserBase, status_code=status.HTTP_201_CREATED
+    "/clients/create", response_model=UserBase, status_code=status.HTTP_201_CREATED
 )
 async def post_endpoint(
     user_data: UserCreate = Depends(),
     in_file: UploadFile = File(...),
     session: AsyncSession = Depends(get_session),
+    new_user_id: uuid.UUID = Depends(get_new_user_id),
+    file_saver: FileSaver = Depends(get_file_saver),
 ):
     user = await get_user_by_email(session, user_data.email)
     if user:
         raise HTTPException(
-            detail='Email already taken', status_code=status.HTTP_400_BAD_REQUEST
+            detail="Email already taken", status_code=status.HTTP_400_BAD_REQUEST
         )
 
-    # create unique user id and user's photo name
-    user_id = uuid.uuid4()
-    # check if file is valid image
-    in_file = check_file(in_file)
-    file_path = get_file_path(in_file.filename, user_id)
-
-    try:
-        # upload file by 1mb size chunks
-        async with aiofiles.open(file_path, 'wb') as file:
-            while contents := await in_file.read(FILE_CHUNK_SIZE):
-                await file.write(contents)
-
-        # open saved file to add watermark
-        async with aiofiles.open(file_path, 'rb') as file:
-            file_data = await file.read()
-
-        # add watermark
-        watermarked_data = add_watermark_to_photo(file_data)
-
-        # save updated file
-        async with aiofiles.open(file_path, 'wb') as file:
-            await file.write(watermarked_data)
-
-    except Exception as e:
-        raise HTTPException(
-            detail={'message': f'Error during file uploading: {str(e)}'},
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
-    finally:
-        await in_file.close()
+    file_path = await file_saver.save_file(in_file, new_user_id)
+    await file_saver.add_watermark(file_path)
 
     user_data.password = get_hashed_password(user_data.password)
-    new_user = await create_user(session, user_data, user_id, file_path)
+    new_user = await create_user(session, user_data, new_user_id, file_path)
     return new_user
 
 
-@loginrouter.post('/token/login', response_model=Token)
+@loginrouter.post("/token/login", response_model=Token)
 async def get_token(
     user_data: UserAuthentication, session: AsyncSession = Depends(get_session)
 ):
@@ -76,8 +48,8 @@ async def get_token(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Incorrect email or password',
-            headers={'WWW-Authenticate': 'Bearer'},
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token(user)
-    return Token(access_token=access_token, token_type='Bearer')
+    return Token(access_token=access_token, token_type="Bearer")
