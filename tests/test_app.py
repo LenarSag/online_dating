@@ -110,8 +110,6 @@ def test_file():
     in_memory_file = io.BytesIO()
     image.save(in_memory_file, format='JPEG')
     in_memory_file.name = 'test_image.jpg'
-
-    # Reset the file pointer to the beginning of the file
     in_memory_file.seek(0)
     return in_memory_file
 
