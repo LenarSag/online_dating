@@ -17,8 +17,9 @@ from app.crud.user_repository import (
 )
 from app.db.database import get_session
 from app.models.user_model import User
-from app.schemas.fastapi_models import UserFilter
-from app.schemas.user_schema import LocationBase, UserOut, UserWithCoordinates
+from app.filters.user_filter import UserFilter
+from app.schemas.location_schema import LocationBase
+from app.schemas.user_schema import UserOut, UserWithCoordinates
 from app.security.authentication import get_current_user
 from app.utils.age import calculate_age
 from app.utils.send_email import send_notification_about_match

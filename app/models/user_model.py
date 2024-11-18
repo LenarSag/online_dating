@@ -7,12 +7,10 @@ from sqlalchemy import (
     Date,
     DateTime,
     Enum,
-    Float,
     ForeignKey,
     func,
     String,
     Table,
-    UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import (
@@ -64,7 +62,7 @@ class User(Base):
     distance_to: Mapped[float] = query_expression()
 
     location: Mapped['Location'] = relationship(
-        back_populates='user', lazy='selectin', cascade='all, delete-orphan'
+        'Location', back_populates='user', lazy='selectin', cascade='all, delete-orphan'
     )
     tags: Mapped[list['Tag']] = relationship(
         'Tag', secondary=user_tag, back_populates='users'
@@ -114,61 +112,3 @@ class User(Base):
 
     def __str__(self) -> str:
         return self.email
-
-
-class Location(Base):
-    __tablename__ = 'location'
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'))
-    latitude: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
-    longitude: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
-
-    user: Mapped['User'] = relationship(back_populates='location')
-
-    __table_args__ = (UniqueConstraint('user_id', name='location_user_id'),)
-
-    @validates('latitude')
-    def validate_latitude(self, key, latitude):
-        if latitude < -90 or latitude > 90:
-            raise ValueError('Latitude must be between -90 and 90.')
-        return latitude
-
-    @validates('longitude')
-    def validate_longitude(self, key, longitude):
-        if longitude < -180 or longitude > 180:
-            raise ValueError('Longitude must be between -180 and 180.')
-        return longitude
-
-
-class Tag(Base):
-    __tablename__ = 'tag'
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(50), nullable=False)
-    slug: Mapped[str] = mapped_column(String(50), unique=True)
-
-    users: Mapped[list['User']] = relationship(
-        'User', secondary=user_tag, back_populates='tags'
-    )
-
-    __table_args__ = (UniqueConstraint('name', 'slug', name='tag_name_slug'),)
-
-
-class Match(Base):
-    __tablename__ = 'match'
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[PG_UUID] = mapped_column(ForeignKey('user.id', ondelete='CASCADE'))
-    matched_user_id: Mapped[PG_UUID] = mapped_column(
-        ForeignKey('user.id', ondelete='CASCADE')
-    )
-    is_mutual: Mapped[bool] = mapped_column(default=False)
-    matched_at: Mapped[Date] = mapped_column(Date, default=func.current_date())
-
-    user = relationship(
-        'User', foreign_keys=[user_id], back_populates='initiated_matches'
-    )
-    matched_user = relationship(
-        'User', foreign_keys=[matched_user_id], back_populates='received_matches'
-    )

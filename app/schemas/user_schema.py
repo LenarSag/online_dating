@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 import re
 from typing import Optional
 from uuid import UUID
@@ -7,6 +7,8 @@ from fastapi.exceptions import ValidationException
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app.models.user_model import UserSex
+from app.schemas.location_schema import LocationBase
+from app.schemas.tag_schema import TagBase
 
 
 class UserAuthentication(BaseModel):
@@ -17,34 +19,34 @@ class UserAuthentication(BaseModel):
 class UserCreate(BaseModel):
     email: EmailStr = Field(max_length=150)
     password: str
-    first_name: str = Field(max_length=50, pattern=r"^[\w.@+-]+$")
-    last_name: str = Field(max_length=50, pattern=r"^[\w.@+-]+$")
+    first_name: str = Field(max_length=50, pattern=r'^[\w.@+-]+$')
+    last_name: str = Field(max_length=50, pattern=r'^[\w.@+-]+$')
     sex: UserSex
     birth_date: date
 
     model_config = ConfigDict(use_enum_values=True)
 
-    @field_validator("password")
+    @field_validator('password')
     @classmethod
     def validate_password(cls, value):
         password_regex = re.compile(
-            r"^"
-            r"(?=.*[a-z])"
-            r"(?=.*[A-Z])"
-            r"(?=.*\d)"
-            r"(?=.*[@$!%*?&])"
-            r"[A-Za-z\d@$!%*?&]"
-            r"{8,}$"
+            r'^'
+            r'(?=.*[a-z])'
+            r'(?=.*[A-Z])'
+            r'(?=.*\d)'
+            r'(?=.*[@$!%*?&])'
+            r'[A-Za-z\d@$!%*?&]'
+            r'{8,}$'
         )
         if not password_regex.match(value):
             raise ValidationException(
-                "The length at least 8 symbols, including "
-                "lower-case, upper-case, nums, "
-                "and special symbols."
+                'The length at least 8 symbols, including '
+                'lower-case, upper-case, nums, '
+                'and special symbols.'
             )
         return value
 
-    @field_validator("birth_date")
+    @field_validator('birth_date')
     @classmethod
     def validate_birth_date(cls, birth_date):
         today = date.today()
@@ -55,9 +57,9 @@ class UserCreate(BaseModel):
         )
 
         if age < 18:
-            raise ValidationException("Age must be at least 18 years old.")
+            raise ValidationException('Age must be at least 18 years old.')
         elif age > 100:
-            raise ValidationException("Age must not be older than 100 years.")
+            raise ValidationException('Age must not be older than 100 years.')
         return birth_date
 
 
@@ -74,7 +76,7 @@ class UserBase(BaseModel):
 
 
 class UserWithCoordinates(UserBase):
-    location: "LocationBase"
+    location: 'LocationBase'
 
 
 class UserOut(BaseModel):
@@ -85,17 +87,6 @@ class UserOut(BaseModel):
     photo: str
     age: int
     distance_to: float
-    tags: Optional[list["Tag"]]
+    tags: Optional[list['TagBase']]
 
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
-
-
-class Tag(BaseModel):
-    name: str
-
-
-class LocationBase(BaseModel):
-    latitude: float
-    longitude: float
-
-    model_config = ConfigDict(from_attributes=True)

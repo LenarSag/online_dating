@@ -26,7 +26,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f'{API_URL}/auth/token/login')
 
 
 # Function to update last_online
-async def update_last_online(session: AsyncSession, user: User):
+async def update_last_online(session: AsyncSession, user: User) -> None:
     # Update only if more than 30 minutes since the last update
     if not user.last_online or user.last_online < datetime.now() - timedelta(
         minutes=30

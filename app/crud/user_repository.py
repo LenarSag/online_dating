@@ -10,9 +10,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, with_expression
 
 from config import EARTH_RADIUS
-from app.models.user_model import Location, Match, User
-from app.schemas.fastapi_models import UserFilter
-from app.schemas.user_schema import LocationBase, UserCreate
+from app.models.location_model import Location
+from app.models.match_model import Match
+from app.models.user_model import User
+from app.filters.user_filter import UserFilter
+from app.schemas.location_schema import LocationBase
+from app.schemas.user_schema import UserCreate
 
 
 async def get_user_by_email(session: AsyncSession, email: EmailStr) -> Optional[User]:
@@ -52,7 +55,7 @@ async def get_user_coordinates(
 async def update_user_coordinates(
     session: AsyncSession, user: User, location: LocationBase
 ) -> User:
-    await session.refresh(user, attribute_names=("location",))
+    await session.refresh(user, attribute_names=('location',))
     user.location.latitude = location.latitude
     user.location.longitude = location.longitude
     await session.commit()
@@ -62,7 +65,7 @@ async def update_user_coordinates(
 async def get_paginated_users(
     session: AsyncSession, user_filter: UserFilter, params: Params, current_user: User
 ):
-    await session.refresh(current_user, attribute_names=("location",))
+    await session.refresh(current_user, attribute_names=('location',))
 
     current_latitude = current_user.location.latitude
     current_longitude = current_user.location.longitude
